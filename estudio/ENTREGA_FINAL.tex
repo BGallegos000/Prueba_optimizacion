@@ -489,10 +489,11 @@ Shortage mínimo por carga declarada & \(2000\times10\) & 20000 \\
 El costo declarado de 260 es incorrecto: omite costos fijos, subestima la distancia y declara
 shortage cero aunque faltan al menos 2000 litros.
 
-\subsection{c) Propuesta de mejora factible}
+\subsection{c) Mejora inicial y solución final encontrada por GA}
 
-Una mejora simple es mantener T1 en \(D\to1\to3\to D\), corregir las cargas reales requeridas
-y cambiar el orden de T2 a \(D\to4\to2\to D\). La propuesta es:
+Como primer acercamiento, una mejora simple es mantener T1 en \(D\to1\to3\to D\),
+corregir las cargas reales requeridas y cambiar el orden de T2 a \(D\to4\to2\to D\).
+Esta modificación elimina el shortage y corrige la estabilidad:
 
 \begin{table}[h]
 \centering
@@ -542,15 +543,77 @@ T2 & 2 & llega 06:55, espera, sirve 07:00--07:30 & Sí \\
 \end{tabular}
 \end{table}
 
-El costo de la mejora es:
+El costo de esta mejora inicial es:
 \[
 \text{Distancia}=60+(40+15+35)=150\text{ km},
 \]
 \[
 \text{Costo total}=2(150)+500+400+10(0)=1200.
 \]
-La mejora reduce el costo real mínimo desde 21200 a 1200, elimina el shortage y mantiene
-factibilidad de capacidad, estabilidad y ventanas de tiempo.
+Por lo tanto, la mejora inicial reduce el costo real mínimo desde 21200 a 1200. Sin
+embargo, al ejecutar el Algoritmo Genético sobre cromosomas de rutas, asignación de
+productos y cargas reparadas, se encuentra una solución factible de menor costo:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llllcc}
+\toprule
+\textbf{Camión} & \textbf{Ruta GA} & \textbf{C0} & \textbf{C1} & \textbf{Carga C0} & \textbf{Carga C1} \\
+\midrule
+T1 & \(D\to1\to2\to4\to D\) & Regular & Diésel & 8000 & 6000 \\
+T2 & \(D\to3\to D\) & Diésel & Regular & 3000 & 2500 \\
+\bottomrule
+\end{tabular}
+\caption{Solución final encontrada por el Algoritmo Genético.}
+\end{table}
+
+La verificación de estabilidad de la solución GA es:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\toprule
+\textbf{Camión e instante} & \(\rho_{C0}\) & \(\rho_{C1}\) & \textbf{Diferencia} \\
+\midrule
+T1 salida & \(8000/8000=1.000\) & \(6000/7000=0.857\) & 0.143 \\
+T1 después estación 1 & \(5000/8000=0.625\) & \(4000/7000=0.571\) & 0.054 \\
+T1 después estación 2 & \(1000/8000=0.125\) & \(2500/7000=0.357\) & 0.232 \\
+T1 después estación 4 & 0.000 & 0.000 & 0.000 \\
+T2 salida & \(3000/6000=0.500\) & \(2500/9000=0.278\) & 0.222 \\
+T2 después estación 3 & 0.000 & 0.000 & 0.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Todas las diferencias son menores o iguales a \(\Delta=0.30\). Además, no hay shortage:
+T1 entrega Regular y Diésel a las estaciones 1, 2 y 4, mientras T2 entrega Diésel y
+Regular a la estación 3.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Camión} & \textbf{Estación} & \textbf{Llegada / servicio} & \textbf{Cumple} \\
+\midrule
+T1 & 1 & llega 05:20, espera, sirve 06:00--06:30 & Sí \\
+T1 & 2 & llega 06:40, espera, sirve 07:00--07:30 & Sí \\
+T1 & 4 & llega 07:45, sirve 07:45--08:15 & Sí \\
+T2 & 3 & llega 05:45, espera, sirve 08:00--08:30 & Sí \\
+\bottomrule
+\end{tabular}
+\caption{Ventanas de tiempo de la solución GA.}
+\end{table}
+
+El costo final de la solución GA es:
+\[
+\text{Distancia}=20+10+15+40+15+15=115\text{ km},
+\]
+\[
+\text{Costo total}=2(115)+500+400+10(0)=1130.
+\]
+Esta es la solución adoptada como resultado final del informe: mejora el primer acercamiento
+de 1200, mantiene factibilidad de capacidad, estabilidad y ventanas de tiempo, y elimina el
+shortage.
 
 \section{Extensión estocástica}
 
@@ -650,8 +713,10 @@ escenario normal, sino también menos costosas cuando la demanda sube o baja.
 
 La solución del operador no es factible: las cargas declaradas no alcanzan para satisfacer la
 demanda, T2 viola la estabilidad después de estación 2 y el costo declarado omite componentes
-obligatorios. La mejora propuesta corrige las cargas, cambia el orden de T2 a \(D\to4\to2\to D\),
-mantiene estabilidad en todos los instantes y reduce el costo real mínimo desde 21200 a 1200.
+obligatorios. La ruta \(D\to4\to2\to D\) para T2 sirve como primer acercamiento factible
+con costo 1200, pero el Algoritmo Genético encuentra una solución mejor: T1 atiende
+\(1\to2\to4\), T2 atiende \(3\), no existe shortage, se respetan las ventanas de tiempo y
+el costo total baja a 1130.
 
 El Algoritmo Genético permite abordar el problema completo codificando rutas, asignación de
 productos, volúmenes y scheduling en un cromosoma único. La función de aptitud combina costo

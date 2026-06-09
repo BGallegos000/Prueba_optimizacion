@@ -421,26 +421,38 @@ def build_story():
     )
     story.append(P("El costo declarado de 260 es incorrecto: omite costos fijos, subestima distancia y declara shortage cero."))
 
-    story.append(H2("c) Propuesta de mejora factible"))
+    story.append(H2("c) Mejora inicial y solución final encontrada por GA"))
+    story.append(P("Como primer acercamiento, se mantiene T1 en D->1->3->D, se corrigen cargas y se cambia T2 a D->4->2->D. Esta solución es factible y reduce el costo, pero no es la mejor encontrada por el modelo."))
     add_table(
         story,
         [
-            ["Camión", "Ruta", "C0", "C1", "Carga C0", "Carga C1"],
+            ["Camión", "Ruta inicial", "C0", "C1", "Carga C0", "Carga C1"],
             ["T1", "D->1->3->D", "Regular", "Diésel", "5500", "5000"],
             ["T2", "D->4->2->D", "Diésel", "Regular", "4000", "5000"],
         ],
         widths=[2.0 * cm, 3.4 * cm, 2.4 * cm, 2.4 * cm, 2.5 * cm, 2.5 * cm],
     )
+    story.append(F("Primer acercamiento: distancia = 150 km\nCosto = 2*150 + 500 + 400 + 10*0 = 1200"))
+    story.append(P("Luego se ejecuta el Algoritmo Genético. Al explorar particiones y órdenes de visita, el GA encuentra una solución factible de menor costo:"))
+    add_table(
+        story,
+        [
+            ["Camión", "Ruta GA", "C0", "C1", "Carga C0", "Carga C1"],
+            ["T1", "D->1->2->4->D", "Regular", "Diésel", "8000", "6000"],
+            ["T2", "D->3->D", "Diésel", "Regular", "3000", "2500"],
+        ],
+        widths=[2.0 * cm, 3.8 * cm, 2.2 * cm, 2.2 * cm, 2.5 * cm, 2.5 * cm],
+    )
     add_table(
         story,
         [
             ["Camión e instante", "rho C0", "rho C1", "Diferencia"],
-            ["T1 salida", "5500/8000=0.688", "5000/7000=0.714", "0.027"],
-            ["T1 después estación 1", "2500/8000=0.313", "3000/7000=0.429", "0.116"],
-            ["T1 después estación 3", "0.000", "0.000", "0.000"],
-            ["T2 salida", "4000/6000=0.667", "5000/9000=0.556", "0.111"],
-            ["T2 después estación 4", "1500/6000=0.250", "4000/9000=0.444", "0.194"],
-            ["T2 después estación 2", "0.000", "0.000", "0.000"],
+            ["T1 salida", "8000/8000=1.000", "6000/7000=0.857", "0.143"],
+            ["T1 después estación 1", "5000/8000=0.625", "4000/7000=0.571", "0.054"],
+            ["T1 después estación 2", "1000/8000=0.125", "2500/7000=0.357", "0.232"],
+            ["T1 después estación 4", "0.000", "0.000", "0.000"],
+            ["T2 salida", "3000/6000=0.500", "2500/9000=0.278", "0.222"],
+            ["T2 después estación 3", "0.000", "0.000", "0.000"],
         ],
         widths=[5.0 * cm, 4.0 * cm, 4.0 * cm, 2.6 * cm],
     )
@@ -449,14 +461,14 @@ def build_story():
         [
             ["Camión", "Estación", "Llegada / servicio", "Cumple"],
             ["T1", "1", "llega 05:20, espera, sirve 06:00-06:30", "Sí"],
-            ["T1", "3", "llega 06:55, espera, sirve 08:00-08:30", "Sí"],
-            ["T2", "4", "llega 06:10, sirve 06:10-06:40", "Sí"],
-            ["T2", "2", "llega 06:55, espera, sirve 07:00-07:30", "Sí"],
+            ["T1", "2", "llega 06:40, espera, sirve 07:00-07:30", "Sí"],
+            ["T1", "4", "llega 07:45, sirve 07:45-08:15", "Sí"],
+            ["T2", "3", "llega 05:45, espera, sirve 08:00-08:30", "Sí"],
         ],
         widths=[2.2 * cm, 2.0 * cm, 8.0 * cm, 2.0 * cm],
     )
-    story.append(F("Distancia = 60 + (40+15+35) = 150 km\nCosto total = 2*150 + 500 + 400 + 10*0 = 1200"))
-    story.append(P("La mejora reduce el costo real mínimo desde 21200 a 1200, elimina shortage y mantiene factibilidad."))
+    story.append(F("Solución GA: distancia = 20 + 10 + 15 + 40 + 15 + 15 = 115 km\nCosto total = 2*115 + 500 + 400 + 10*0 = 1130"))
+    story.append(P("La solución final adoptada es la del GA: mejora el primer acercamiento de 1200, elimina shortage y mantiene factibilidad de capacidad, estabilidad y ventanas de tiempo."))
 
     story.append(H1("4. Extensión estocástica"))
     story.append(P("La demanda real se modela con tres escenarios. Cuando el enunciado no modifica el Diésel de estación 3, se conserva el valor normal de 3000 L."))
@@ -491,7 +503,7 @@ def build_story():
 
     story.append(H1("Conclusión"))
     story.append(P("La solución del operador no es factible: las cargas declaradas no alcanzan para satisfacer demanda, T2 viola estabilidad después de estación 2 y el costo declarado omite componentes obligatorios."))
-    story.append(P("La mejora propuesta corrige cargas, cambia el orden de T2 a D->4->2->D, mantiene estabilidad en todos los instantes y reduce el costo real mínimo desde 21200 a 1200."))
+    story.append(P("La ruta D->4->2->D para T2 sirve como primer acercamiento factible de costo 1200. El Algoritmo Genético mejora ese resultado: T1 atiende 1->2->4, T2 atiende 3, no hay shortage y el costo total baja a 1130."))
     story.append(P("El Algoritmo Genético permite abordar el problema completo codificando rutas, asignación de productos, volúmenes y scheduling en un cromosoma único, con una función de aptitud basada en costo real y penalizaciones."))
 
     return story
